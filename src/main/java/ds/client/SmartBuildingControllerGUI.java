@@ -3,8 +3,8 @@ package ds.client;
 import ds.lightingControlService.LightingControlServiceGrpc;
 import ds.securityControlService.*;
 import ds.temperatureControlService.TemperatureControlServiceGrpc;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
+import io.grpc.*;
+import io.grpc.stub.MetadataUtils;
 import io.grpc.stub.StreamObserver;
 
 import javax.swing.*;
@@ -146,20 +146,41 @@ public class SmartBuildingControllerGUI implements ActionListener {
         JButton button = (JButton)e.getSource();
         String label = button.getActionCommand();
 
+
         if (label.equals("Invoke SecurityControlService")) {
             System.out.println("Security Control Service to be invoked ...");
             String action = "";
             if(action.equals("unlockDoor")){
                 ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 60051).usePlaintext().build();
-                SecurityControlServiceGrpc.SecurityControlServiceBlockingStub blockingStub = SecurityControlServiceGrpc.newBlockingStub(channel);
 
+                Metadata metadata = new Metadata();
+                Metadata.Key<String> key = Metadata.Key.of("Authorization", Metadata.ASCII_STRING_MARSHALLER);
+                metadata.put(key, "Bearer my_token");
+                SecurityControlServiceGrpc.SecurityControlServiceBlockingStub blockingStub = MetadataUtils.attachHeaders(SecurityControlServiceGrpc.newBlockingStub(channel), metadata);
+                // Set a deadline of 5 second for the remote invocation
+                Deadline deadline = Deadline.after(5, TimeUnit.SECONDS);
                 //preparing message to send
                 ds.securityControlService.UnlockDoorRequest request = ds.securityControlService.UnlockDoorRequest.newBuilder().setDoorId(Integer.parseInt(entry1.getText())).build();
-
                 //retreving reply from service
-                ds.securityControlService.UnlockDoorResponse response = blockingStub.unlockDoor(request);
+                Context.CancellableContext context = Context.current().withCancellation();
+                try{
+                    ds.securityControlService.UnlockDoorResponse response = blockingStub.withDeadline(deadline).unlockDoor(request);
+                    reply1.setText(response.getStatus());
+                }catch(StatusRuntimeException exception){
+                    if (exception.getStatus().getCode() == Status.DEADLINE_EXCEEDED.getCode()) {
+                        // Handle timeout error
+                        System.out.println("Timeout error!");
+                    } else {
+                        // Handle other errors
+                        throw new StatusRuntimeException(
+                                Status.INTERNAL.withDescription("An error occurred while invoking remote method"));
+                    }
+                }finally {
+                    context.cancel(null);
+                }
 
-                reply1.setText(response.getStatus());
+
+
             }else if(action.equals("lockDoorBidirectionalStream")) {
                 ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 60051).usePlaintext().build();
                 SecurityControlServiceGrpc.SecurityControlServiceStub stub = SecurityControlServiceGrpc.newStub(channel);
