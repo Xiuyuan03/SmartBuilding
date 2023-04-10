@@ -1,6 +1,8 @@
 package ds.lightingControlService;
 
 import ds.SmartBuilding;
+import ds.jmdns.LightingControlServiceRegistration;
+import ds.jmdns.SecurityControlServiceRegistration;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.stub.StreamObserver;
@@ -15,6 +17,8 @@ public class LightingControlService extends LightingControlServiceGrpc.LightingC
                 .addService(lightingControlService)
                 .build()
                 .start();
+        //jmdns registration service
+        LightingControlServiceRegistration.register();
         System.out.println("Lighting Control Service started, listening on " + port);
         server.awaitTermination();
     }

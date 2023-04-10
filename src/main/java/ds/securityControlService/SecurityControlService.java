@@ -1,6 +1,7 @@
 package ds.securityControlService;
 
 import ds.SmartBuilding;
+import ds.jmdns.SecurityControlServiceRegistration;
 import ds.service1.ResponseMessage;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
@@ -17,6 +18,8 @@ public class SecurityControlService extends SecurityControlServiceGrpc.SecurityC
                 .addService(securityControlService)
                 .build()
                 .start();
+        //jmdns registration service
+        SecurityControlServiceRegistration.register();
         System.out.println("Security Control Service started, listening on " + port);
         server.awaitTermination();
     }

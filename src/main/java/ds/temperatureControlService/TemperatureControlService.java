@@ -1,6 +1,8 @@
 package ds.temperatureControlService;
 
 import ds.SmartBuilding;
+import ds.jmdns.SecurityControlServiceRegistration;
+import ds.jmdns.TemperatureControlServiceRegistration;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.stub.StreamObserver;
@@ -15,6 +17,8 @@ public class TemperatureControlService extends TemperatureControlServiceGrpc.Tem
                 .addService(temperatureControlService)
                 .build()
                 .start();
+        //jmdns registration service
+        TemperatureControlServiceRegistration.register();
         System.out.println("Temperature Control Service started, listening on " + port);
         server.awaitTermination();
     }
