@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "ds.lightingControlService";
+option java_outer_classname = "LightingControlServiceImpl";
+
+package lightingControlService;
+
+// Interface exported by the server.
+service LightingControlService {
+
+  rpc switchLightOn(SwitchLightOnRequest) returns (SwitchLightOnResponse) {}
+  rpc switchLightOff(SwitchLightOffRequest) returns (SwitchLightOffResponse) {}
+  rpc setSwitchLightTime(SetTimeRequest) returns (SetTimeResponse) {}
+
+}
+
+message SwitchLightOnRequest {
+  bool detects = 1;
+}
+
+message SwitchLightOnResponse {
+  string status = 1;
+}
+
+message SwitchLightOffRequest {
+  bool detects = 1;
+}
+
+message SwitchLightOffResponse {
+  string status = 1;
+}
+
+message SetTimeRequest {
+  float time = 1;
+}
+
+message SetTimeResponse {
+  string status = 1;
+}
+
+
+

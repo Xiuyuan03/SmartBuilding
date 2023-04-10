@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "ds.securityControlService";
+option java_outer_classname = "SecurityControlServiceImpl";
+
+package securityControlService;
+
+// Interface exported by the server.
+service SecurityControlService {
+  //simple RPC
+  rpc unlockDoor(UnlockDoorRequest) returns (UnlockDoorResponse) {}
+  rpc lockDoor(LockDoorRequest) returns (LockDoorResponse) {}
+  rpc activateAlarm(ActivateAlarmRequest) returns (ActivateAlarmResponse) {}
+  rpc deactivateAlarm(DeactivateAlarmRequest) returns (DeactivateAlarmResponse) {}
+  //server- side streaming RPC
+  rpc getLockStatusServerStream(LockDoorStatusRequest) returns (stream LockDoorStatusResponse) {}
+  //client-side streaming RPC
+  rpc activateAlarmClientStream(stream ActivateAlarmRequest) returns (ActivateAlarmResponse) {}
+  rpc deactivateAlarmClientStream(stream DeactivateAlarmRequest) returns (DeactivateAlarmResponse) {}
+  //bidirectional streamingRPC
+  rpc lockDoorBidirectionalStream(stream LockDoorRequest) returns (stream LockDoorResponse) {}
+}
+message LockDoorStatusRequest {
+  string doorIdRequest = 1;
+}
+
+message LockDoorStatusResponse {
+  string status = 1;
+}
+
+message UnlockDoorRequest {
+  int32 doorId = 1;
+}
+
+message UnlockDoorResponse {
+  string status = 1;
+}
+
+message LockDoorRequest {
+  int32 doorId = 1;
+}
+
+message LockDoorResponse {
+  string status = 1;
+}
+
+message ActivateAlarmRequest {
+  int32 doorId = 1;
+}
+
+message ActivateAlarmResponse {
+  string status = 1;
+}
+
+message DeactivateAlarmRequest {
+  int32 doorId = 1;
+}
+
+message DeactivateAlarmResponse {
+  string status = 1;
+}

@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "ds.temperatureControlService";
+option java_outer_classname = "TemperatureControlServiceImpl";
+
+package temperatureControlService;
+
+// Interface exported by the server.
+service TemperatureControlService {
+
+  rpc setTemperature(SetTemperatureRequest) returns (SetTemperatureResponse) {}
+  rpc getTemperature(GetTemperatureRequest) returns (GetTemperatureResponse) {}
+  rpc setTemperatureTime(SetTemperatureTimeRequest) returns (SetTemperatureTimeResponse) {}
+
+}
+
+message SetTemperatureRequest {
+  float value = 1;
+}
+
+message SetTemperatureResponse {
+  string status = 1;
+}
+
+message GetTemperatureRequest {
+  string requestValue = 1;
+}
+
+message GetTemperatureResponse {
+  float getValue= 1;
+}
+
+message SetTemperatureTimeRequest {
+  float time = 1;
+}
+
+message SetTemperatureTimeResponse {
+  string status = 1;
+}
