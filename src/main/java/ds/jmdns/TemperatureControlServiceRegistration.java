@@ -13,7 +13,7 @@ public class TemperatureControlServiceRegistration {
             JmDNS jmdns = JmDNS.create(InetAddress.getLocalHost());
 
             // Register a service
-            ServiceInfo serviceInfo = ServiceInfo.create("_http._tcp.local.", "TemperatureControlService", 60053, "path=index.html");
+            ServiceInfo serviceInfo = ServiceInfo.create("_http._tcp.local.", "TemperatureControlService", 60053, "service for basic TemperatureControlService operations");
             jmdns.registerService(serviceInfo);
 
         } catch (IOException e) {

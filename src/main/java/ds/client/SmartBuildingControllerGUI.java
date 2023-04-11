@@ -15,93 +15,84 @@ import java.awt.event.ActionListener;
 import java.util.concurrent.TimeUnit;
 
 public class SmartBuildingControllerGUI implements ActionListener {
-    private JTextField entry1, reply1;
+    private JTextField entry1,entry1_1, reply1;
     private JTextField entry2, reply2;
     private JTextField entry3, reply3;
-
-
+    private JTextArea textResponse;
+    private JComboBox comboOperation1,comboOperation2,comboOperation3;
+    private String[] lightingControlServiceArray = new String[] {"SwitchLightOn", "SwitchLightOff", "SetTime"};
+    private String[] temperatureControlServiceArray = new String[] {"SetTemperature", "GetTemperature", "SetTemperatureTime"};
+    private String[] securityControlServiceArray = new String[] {"unlockDoor", "lockDoorBidirectionalStream", "activateAlarmClientStream","deactivateAlarmClientStream"};
     private JPanel getSecurityControlServiceJPanel() {
-
         JPanel panel = new JPanel();
-
         BoxLayout boxlayout = new BoxLayout(panel, BoxLayout.X_AXIS);
-
-        JLabel label = new JLabel("Enter value")	;
+        JLabel label = new JLabel("Enter value1")	;
         panel.add(label);
         panel.add(Box.createRigidArea(new Dimension(10, 0)));
         entry1 = new JTextField("",10);
         panel.add(entry1);
         panel.add(Box.createRigidArea(new Dimension(10, 0)));
-
+        JLabel label1 = new JLabel("Enter value2")	;
+        panel.add(label1);
+        panel.add(Box.createRigidArea(new Dimension(10, 0)));
+        entry1_1 = new JTextField("",10);
+        panel.add(entry1_1);
+        comboOperation1 = new JComboBox();
+        comboOperation1.setModel(new DefaultComboBoxModel(securityControlServiceArray));
+        panel.add(comboOperation1);
         JButton button = new JButton("Invoke SecurityControlService");
         button.addActionListener(this);
         panel.add(button);
         panel.add(Box.createRigidArea(new Dimension(10, 0)));
-
         reply1 = new JTextField("", 10);
         reply1 .setEditable(false);
         panel.add(reply1 );
-
         panel.setLayout(boxlayout);
-
         return panel;
-
     }
-
     private JPanel getLightingControlServiceJPanel() {
-
         JPanel panel = new JPanel();
-
         BoxLayout boxlayout = new BoxLayout(panel, BoxLayout.X_AXIS);
-
         JLabel label = new JLabel("Enter value")	;
         panel.add(label);
         panel.add(Box.createRigidArea(new Dimension(10, 0)));
         entry2 = new JTextField("",10);
         panel.add(entry2);
         panel.add(Box.createRigidArea(new Dimension(10, 0)));
-
+        comboOperation2 = new JComboBox();
+        comboOperation2.setModel(new DefaultComboBoxModel(lightingControlServiceArray));
+        panel.add(comboOperation2);
         JButton button = new JButton("Invoke LightingControlService");
         button.addActionListener(this);
         panel.add(button);
         panel.add(Box.createRigidArea(new Dimension(10, 0)));
-
         reply2 = new JTextField("", 10);
         reply2 .setEditable(false);
         panel.add(reply2 );
-
         panel.setLayout(boxlayout);
-
         return panel;
-
     }
-
     private JPanel getTemperatureControlServiceJPanel() {
-
         JPanel panel = new JPanel();
-
         BoxLayout boxlayout = new BoxLayout(panel, BoxLayout.X_AXIS);
-
         JLabel label = new JLabel("Enter value")	;
         panel.add(label);
         panel.add(Box.createRigidArea(new Dimension(10, 0)));
         entry3 = new JTextField("",10);
         panel.add(entry3);
         panel.add(Box.createRigidArea(new Dimension(10, 0)));
-
+        comboOperation3 = new JComboBox();
+        comboOperation3.setModel(new DefaultComboBoxModel(temperatureControlServiceArray));
+        panel.add(comboOperation3);
         JButton button = new JButton("Invoke TemperatureControlService");
         button.addActionListener(this);
         panel.add(button);
         panel.add(Box.createRigidArea(new Dimension(10, 0)));
-
         reply3 = new JTextField("", 10);
         reply3 .setEditable(false);
         panel.add(reply3 );
-
         panel.setLayout(boxlayout);
-
         return panel;
-
     }
 
     public static void main(String[] args) {
@@ -112,10 +103,8 @@ public class SmartBuildingControllerGUI implements ActionListener {
     }
 
     private void build() {
-
         JFrame frame = new JFrame("SmartBuildingController");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
         // Set the panel to add buttons
         JPanel panel = new JPanel();
 
@@ -149,11 +138,12 @@ public class SmartBuildingControllerGUI implements ActionListener {
 
         if (label.equals("Invoke SecurityControlService")) {
             System.out.println("Security Control Service to be invoked ...");
-            String action = "";
             ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 60051).usePlaintext().build();
             Metadata metadata = new Metadata();
             Metadata.Key<String> key = Metadata.Key.of("Authorization", Metadata.ASCII_STRING_MARSHALLER);
             metadata.put(key, "Bearer my_token");
+            int index = comboOperation1.getSelectedIndex();
+            String action = securityControlServiceArray[index];
             if(action.equals("unlockDoor")){
                 SecurityControlServiceGrpc.SecurityControlServiceBlockingStub blockingStub = MetadataUtils.attachHeaders(SecurityControlServiceGrpc.newBlockingStub(channel), metadata);
                 // Set a deadline of 5 second for the remote invocation
@@ -293,11 +283,12 @@ public class SmartBuildingControllerGUI implements ActionListener {
             }
         }else if (label.equals("Invoke LightingControlService")) {
             System.out.println("Lighting Control Service to be invoked ...");
-            String action = "";
             ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 60052).usePlaintext().build();
             Metadata metadata = new Metadata();
             Metadata.Key<String> key = Metadata.Key.of("Authorization", Metadata.ASCII_STRING_MARSHALLER);
             metadata.put(key, "Bearer my_token");
+            int index = comboOperation2.getSelectedIndex();
+            String action = lightingControlServiceArray[index];
             if(action.equals("SwitchLightOn")){
                 LightingControlServiceGrpc.LightingControlServiceBlockingStub blockingStub = MetadataUtils.attachHeaders(LightingControlServiceGrpc.newBlockingStub(channel), metadata);
                 // Set a deadline of 5 second for the remote invocation
@@ -308,7 +299,7 @@ public class SmartBuildingControllerGUI implements ActionListener {
                 Context.CancellableContext context = Context.current().withCancellation();
                 try{
                     SwitchLightOnResponse response = blockingStub.withDeadline(deadline).switchLightOn(request);
-                    reply2.setText( String.valueOf( response.getStatus()) );
+                    reply2.setText(response.getStatus());
                 }catch(StatusRuntimeException exception){
                     if(exception.getStatus().getCode() == Status.DEADLINE_EXCEEDED.getCode()){
                         // Handle timeout error
@@ -321,6 +312,7 @@ public class SmartBuildingControllerGUI implements ActionListener {
                 }finally{
                     context.cancel(null);
                 }
+                channel.shutdown();
             }else if(action.equals("SwitchLightOff")){
                 LightingControlServiceGrpc.LightingControlServiceBlockingStub blockingStub = MetadataUtils.attachHeaders(LightingControlServiceGrpc.newBlockingStub(channel), metadata);
                 // Set a deadline of 5 second for the remote invocation
@@ -344,6 +336,7 @@ public class SmartBuildingControllerGUI implements ActionListener {
                 }finally{
                     context.cancel(null);
                 }
+                channel.shutdown();
             }else if(action.equals("SetTime")){
                 LightingControlServiceGrpc.LightingControlServiceBlockingStub blockingStub = MetadataUtils.attachHeaders(LightingControlServiceGrpc.newBlockingStub(channel), metadata);
                 // Set a deadline of 5 second for the remote invocation
@@ -367,14 +360,16 @@ public class SmartBuildingControllerGUI implements ActionListener {
                 }finally{
                     context.cancel(null);
                 }
+                channel.shutdown();
             }
         }else if (label.equals("Invoke TemperatureControlService")) {
             System.out.println("Temperature Control Service to be invoked ...");
-            String action = "";
             ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 60053).usePlaintext().build();
             Metadata metadata = new Metadata();
             Metadata.Key<String> key = Metadata.Key.of("Authorization", Metadata.ASCII_STRING_MARSHALLER);
             metadata.put(key, "Bearer my_token");
+            int index = comboOperation3.getSelectedIndex();
+            String action = temperatureControlServiceArray[index];
             if(action.equals("SetTemperature")){
                 TemperatureControlServiceGrpc.TemperatureControlServiceBlockingStub blockingStub = MetadataUtils.attachHeaders(TemperatureControlServiceGrpc.newBlockingStub(channel), metadata);
                 // Set a deadline of 5 second for the remote invocation
@@ -398,6 +393,7 @@ public class SmartBuildingControllerGUI implements ActionListener {
                 }finally{
                     context.cancel(null);
                 }
+                channel.shutdown();
             }else if(action.equals("GetTemperature")){
                 TemperatureControlServiceGrpc.TemperatureControlServiceBlockingStub blockingStub = MetadataUtils.attachHeaders(TemperatureControlServiceGrpc.newBlockingStub(channel), metadata);
                 // Set a deadline of 5 second for the remote invocation
@@ -408,7 +404,7 @@ public class SmartBuildingControllerGUI implements ActionListener {
                 Context.CancellableContext context = Context.current().withCancellation();
                 try{
                     GetTemperatureResponse response = blockingStub.withDeadline(deadline).getTemperature(request);
-                    reply3.setText(( response.getGetValue()));
+                    reply3.setText(String.valueOf( response.getGetValue()));
                 }catch(StatusRuntimeException exception){
                     if(exception.getStatus().getCode() == Status.DEADLINE_EXCEEDED.getCode()){
                         // Handle timeout error
@@ -421,6 +417,7 @@ public class SmartBuildingControllerGUI implements ActionListener {
                 }finally{
                     context.cancel(null);
                 }
+                channel.shutdown();
             }else if(action.equals("SetTemperatureTime")){
                 TemperatureControlServiceGrpc.TemperatureControlServiceBlockingStub blockingStub = MetadataUtils.attachHeaders(TemperatureControlServiceGrpc.newBlockingStub(channel), metadata);
                 // Set a deadline of 5 second for the remote invocation
@@ -444,6 +441,7 @@ public class SmartBuildingControllerGUI implements ActionListener {
                 }finally{
                     context.cancel(null);
                 }
+                channel.shutdown();
             }
         }
     }

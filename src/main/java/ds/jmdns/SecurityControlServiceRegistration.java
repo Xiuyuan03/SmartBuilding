@@ -13,7 +13,7 @@ public class SecurityControlServiceRegistration {
             JmDNS jmdns = JmDNS.create(InetAddress.getLocalHost());
 
             // Register a service
-            ServiceInfo serviceInfo = ServiceInfo.create("_http._tcp.local.", "SecurityControlService", 60051, "path=index.html");
+            ServiceInfo serviceInfo = ServiceInfo.create("_http._tcp.local.", "SecurityControlService", 60051, "service for basic math operations");
             jmdns.registerService(serviceInfo);
 
         } catch (IOException e) {

@@ -13,7 +13,7 @@ public class LightingControlServiceRegistration {
             JmDNS jmdns = JmDNS.create(InetAddress.getLocalHost());
 
             // Register a service
-            ServiceInfo serviceInfo = ServiceInfo.create("_http._tcp.local.", "LightingControlService", 60052, "path=index.html");
+            ServiceInfo serviceInfo = ServiceInfo.create("_http._tcp.local.", "LightingControlService", 60052, "service for basic LightingControlService operations");
             jmdns.registerService(serviceInfo);
 
         } catch (IOException e) {
