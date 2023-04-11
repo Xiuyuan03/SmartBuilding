@@ -1,8 +1,8 @@
 package ds.client;
 
-import ds.lightingControlService.LightingControlServiceGrpc;
+import ds.lightingControlService.*;
 import ds.securityControlService.*;
-import ds.temperatureControlService.TemperatureControlServiceGrpc;
+import ds.temperatureControlService.*;
 import io.grpc.*;
 import io.grpc.stub.MetadataUtils;
 import io.grpc.stub.StreamObserver;
@@ -150,21 +150,20 @@ public class SmartBuildingControllerGUI implements ActionListener {
         if (label.equals("Invoke SecurityControlService")) {
             System.out.println("Security Control Service to be invoked ...");
             String action = "";
+            ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 60051).usePlaintext().build();
+            Metadata metadata = new Metadata();
+            Metadata.Key<String> key = Metadata.Key.of("Authorization", Metadata.ASCII_STRING_MARSHALLER);
+            metadata.put(key, "Bearer my_token");
             if(action.equals("unlockDoor")){
-                ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 60051).usePlaintext().build();
-
-                Metadata metadata = new Metadata();
-                Metadata.Key<String> key = Metadata.Key.of("Authorization", Metadata.ASCII_STRING_MARSHALLER);
-                metadata.put(key, "Bearer my_token");
                 SecurityControlServiceGrpc.SecurityControlServiceBlockingStub blockingStub = MetadataUtils.attachHeaders(SecurityControlServiceGrpc.newBlockingStub(channel), metadata);
                 // Set a deadline of 5 second for the remote invocation
                 Deadline deadline = Deadline.after(5, TimeUnit.SECONDS);
                 //preparing message to send
-                ds.securityControlService.UnlockDoorRequest request = ds.securityControlService.UnlockDoorRequest.newBuilder().setDoorId(Integer.parseInt(entry1.getText())).build();
+                UnlockDoorRequest request = UnlockDoorRequest.newBuilder().setDoorId(Integer.parseInt(entry1.getText())).build();
                 //retreving reply from service
                 Context.CancellableContext context = Context.current().withCancellation();
                 try{
-                    ds.securityControlService.UnlockDoorResponse response = blockingStub.withDeadline(deadline).unlockDoor(request);
+                    UnlockDoorResponse response = blockingStub.withDeadline(deadline).unlockDoor(request);
                     reply1.setText(response.getStatus());
                 }catch(StatusRuntimeException exception){
                     if (exception.getStatus().getCode() == Status.DEADLINE_EXCEEDED.getCode()) {
@@ -182,7 +181,6 @@ public class SmartBuildingControllerGUI implements ActionListener {
 
 
             }else if(action.equals("lockDoorBidirectionalStream")) {
-                ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 60051).usePlaintext().build();
                 SecurityControlServiceGrpc.SecurityControlServiceStub stub = SecurityControlServiceGrpc.newStub(channel);
                 StreamObserver<LockDoorResponse> responseData = new StreamObserver<LockDoorResponse>() {
                     @Override
@@ -220,7 +218,6 @@ public class SmartBuildingControllerGUI implements ActionListener {
                 }
 
             }else if(action.equals("activateAlarmClientStream")){
-                ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 60051).usePlaintext().build();
                 SecurityControlServiceGrpc.SecurityControlServiceStub stub = SecurityControlServiceGrpc.newStub(channel);
                 StreamObserver<ActivateAlarmResponse> responseData = new StreamObserver<ActivateAlarmResponse>() {
                     @Override
@@ -255,7 +252,6 @@ public class SmartBuildingControllerGUI implements ActionListener {
                     ex.printStackTrace();
                 }
             }else if(action.equals("deactivateAlarmClientStream")){
-                ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 60051).usePlaintext().build();
                 SecurityControlServiceGrpc.SecurityControlServiceStub stub = SecurityControlServiceGrpc.newStub(channel);
                 StreamObserver<DeactivateAlarmResponse> responseData = new StreamObserver<DeactivateAlarmResponse>() {
                     @Override
@@ -292,36 +288,164 @@ public class SmartBuildingControllerGUI implements ActionListener {
             }
         }else if (label.equals("Invoke LightingControlService")) {
             System.out.println("Lighting Control Service to be invoked ...");
-
+            String action = "";
             ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 60052).usePlaintext().build();
-            LightingControlServiceGrpc.LightingControlServiceBlockingStub blockingStub = LightingControlServiceGrpc.newBlockingStub(channel);
+            Metadata metadata = new Metadata();
+            Metadata.Key<String> key = Metadata.Key.of("Authorization", Metadata.ASCII_STRING_MARSHALLER);
+            metadata.put(key, "Bearer my_token");
+            if(action.equals("SwitchLightOn")){
+                LightingControlServiceGrpc.LightingControlServiceBlockingStub blockingStub = MetadataUtils.attachHeaders(LightingControlServiceGrpc.newBlockingStub(channel), metadata);
+                // Set a deadline of 5 second for the remote invocation
+                Deadline deadline = Deadline.after(5, TimeUnit.SECONDS);
+                //preparing message to send
+                SwitchLightOnRequest request = SwitchLightOnRequest.newBuilder().setDetects(Boolean.parseBoolean(entry2.getText())).build();
+                //retreving reply from service
+                Context.CancellableContext context = Context.current().withCancellation();
+                try{
+                    SwitchLightOnResponse response = blockingStub.withDeadline(deadline).switchLightOn(request);
+                    reply2.setText( String.valueOf( response.getStatus()) );
+                }catch(StatusRuntimeException exception){
+                    if(exception.getStatus().getCode() == Status.DEADLINE_EXCEEDED.getCode()){
+                        // Handle timeout error
+                        System.out.println("Timeout error!");
+                    }else{
+                        // Handle other errors
+                        throw new StatusRuntimeException(
+                                Status.INTERNAL.withDescription("An error occurred while invoking remote method"));
+                    }
+                }finally{
+                context.cancel(null);
+                }
+            }else if(action.equals("SwitchLightOff")){
+                LightingControlServiceGrpc.LightingControlServiceBlockingStub blockingStub = MetadataUtils.attachHeaders(LightingControlServiceGrpc.newBlockingStub(channel), metadata);
+                // Set a deadline of 5 second for the remote invocation
+                Deadline deadline = Deadline.after(5, TimeUnit.SECONDS);
+                //preparing message to send
+                SwitchLightOffRequest request = SwitchLightOffRequest.newBuilder().setDetects(Boolean.parseBoolean(entry2.getText())).build();
+                //retreving reply from service
+                Context.CancellableContext context = Context.current().withCancellation();
+                try{
+                    SwitchLightOffResponse response = blockingStub.withDeadline(deadline).switchLightOff(request);
+                    reply2.setText( String.valueOf( response.getStatus()) );
+                }catch(StatusRuntimeException exception){
+                    if(exception.getStatus().getCode() == Status.DEADLINE_EXCEEDED.getCode()){
+                        // Handle timeout error
+                        System.out.println("Timeout error!");
+                    }else{
+                        // Handle other errors
+                        throw new StatusRuntimeException(
+                                Status.INTERNAL.withDescription("An error occurred while invoking remote method"));
+                    }
+                }finally{
+                    context.cancel(null);
+                }
+            }else if(action.equals("SetTime")){
+                LightingControlServiceGrpc.LightingControlServiceBlockingStub blockingStub = MetadataUtils.attachHeaders(LightingControlServiceGrpc.newBlockingStub(channel), metadata);
+                // Set a deadline of 5 second for the remote invocation
+                Deadline deadline = Deadline.after(5, TimeUnit.SECONDS);
+                //preparing message to send
+                SetTimeRequest request = SetTimeRequest.newBuilder().setTime(Float.parseFloat(entry2.getText())).build();
+                //retreving reply from service
+                Context.CancellableContext context = Context.current().withCancellation();
+                try{
+                    SetTimeResponse response = blockingStub.withDeadline(deadline).setSwitchLightTime(request);
+                    reply2.setText( String.valueOf( response.getStatus()) );
+                }catch(StatusRuntimeException exception){
+                    if(exception.getStatus().getCode() == Status.DEADLINE_EXCEEDED.getCode()){
+                        // Handle timeout error
+                        System.out.println("Timeout error!");
+                    }else{
+                        // Handle other errors
+                        throw new StatusRuntimeException(
+                                Status.INTERNAL.withDescription("An error occurred while invoking remote method"));
+                    }
+                }finally{
+                    context.cancel(null);
+                }
+            }else{
 
-            //preparing message to send
-            ds.lightingControlService.SwitchLightOnRequest request = ds.lightingControlService.SwitchLightOnRequest.newBuilder().setDetects(Boolean.parseBoolean(entry2.getText())).build();
-
-            //retreving reply from service
-            ds.lightingControlService.SwitchLightOnResponse response = blockingStub.switchLightOn(request);
-
-            reply2.setText( String.valueOf( response.getStatus()) );
-
+            }
         }else if (label.equals("Invoke TemperatureControlService")) {
             System.out.println("Temperature Control Service to be invoked ...");
-
+            String action = "";
             ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 60053).usePlaintext().build();
-            TemperatureControlServiceGrpc.TemperatureControlServiceBlockingStub blockingStub = TemperatureControlServiceGrpc.newBlockingStub(channel);
+            Metadata metadata = new Metadata();
+            Metadata.Key<String> key = Metadata.Key.of("Authorization", Metadata.ASCII_STRING_MARSHALLER);
+            metadata.put(key, "Bearer my_token");
+            if(action.equals("SetTemperature")){
+                TemperatureControlServiceGrpc.TemperatureControlServiceBlockingStub blockingStub = MetadataUtils.attachHeaders(TemperatureControlServiceGrpc.newBlockingStub(channel), metadata);
+                // Set a deadline of 5 second for the remote invocation
+                Deadline deadline = Deadline.after(5, TimeUnit.SECONDS);
+                //preparing message to send
+                SetTemperatureRequest request = SetTemperatureRequest.newBuilder().setValue(Float.parseFloat(entry3.getText())).build();
+                //retreving reply from service
+                Context.CancellableContext context = Context.current().withCancellation();
+                try{
+                    SetTemperatureResponse response = blockingStub.withDeadline(deadline).setTemperature(request);
+                    reply3.setText( ( response.getStatus()) );
+                }catch(StatusRuntimeException exception){
+                    if(exception.getStatus().getCode() == Status.DEADLINE_EXCEEDED.getCode()){
+                        // Handle timeout error
+                        System.out.println("Timeout error!");
+                    }else{
+                        // Handle other errors
+                        throw new StatusRuntimeException(
+                                Status.INTERNAL.withDescription("An error occurred while invoking remote method"));
+                    }
+                }finally{
+                    context.cancel(null);
+                }
+            }else if(action.equals("GetTemperature")){
+                TemperatureControlServiceGrpc.TemperatureControlServiceBlockingStub blockingStub = MetadataUtils.attachHeaders(TemperatureControlServiceGrpc.newBlockingStub(channel), metadata);
+                // Set a deadline of 5 second for the remote invocation
+                Deadline deadline = Deadline.after(5, TimeUnit.SECONDS);
+                //preparing message to send
+                GetTemperatureRequest request = GetTemperatureRequest.newBuilder().setRequestValue(String.valueOf(entry3.getText())).build();
+                //retreving reply from service
+                Context.CancellableContext context = Context.current().withCancellation();
+                try{
+                    GetTemperatureResponse response = blockingStub.withDeadline(deadline).getTemperature(request);
+                    reply3.setText(( response.getGetValue()));
+                }catch(StatusRuntimeException exception){
+                    if(exception.getStatus().getCode() == Status.DEADLINE_EXCEEDED.getCode()){
+                        // Handle timeout error
+                        System.out.println("Timeout error!");
+                    }else{
+                        // Handle other errors
+                        throw new StatusRuntimeException(
+                                Status.INTERNAL.withDescription("An error occurred while invoking remote method"));
+                    }
+                }finally{
+                    context.cancel(null);
+                }
+            }else if(action.equals("SetTemperatureTime")){
+                TemperatureControlServiceGrpc.TemperatureControlServiceBlockingStub blockingStub = MetadataUtils.attachHeaders(TemperatureControlServiceGrpc.newBlockingStub(channel), metadata);
+                // Set a deadline of 5 second for the remote invocation
+                Deadline deadline = Deadline.after(5, TimeUnit.SECONDS);
+                //preparing message to send
+                SetTemperatureTimeRequest request = SetTemperatureTimeRequest.newBuilder().setTime(Float.parseFloat(entry3.getText())).build();
+                //retreving reply from service
+                Context.CancellableContext context = Context.current().withCancellation();
+                try{
+                    SetTemperatureTimeResponse response = blockingStub.withDeadline(deadline).setTemperatureTime(request);
+                    reply3.setText( ( response.getStatus()) );
+                }catch(StatusRuntimeException exception){
+                    if(exception.getStatus().getCode() == Status.DEADLINE_EXCEEDED.getCode()){
+                        // Handle timeout error
+                        System.out.println("Timeout error!");
+                    }else{
+                        // Handle other errors
+                        throw new StatusRuntimeException(
+                                Status.INTERNAL.withDescription("An error occurred while invoking remote method"));
+                    }
+                }finally{
+                    context.cancel(null);
+                }
+            }else{
 
-            //preparing message to send
-            ds.temperatureControlService.SetTemperatureRequest request = ds.temperatureControlService.SetTemperatureRequest.newBuilder().setValue(Float.parseFloat(entry3.getText())).build();
-
-            //retreving reply from service
-            ds.temperatureControlService.SetTemperatureResponse response = blockingStub.setTemperature(request);
-
-            reply3.setText( ( response.getStatus()) );
-
+            }
         }else{
 
         }
-
     }
-
 }

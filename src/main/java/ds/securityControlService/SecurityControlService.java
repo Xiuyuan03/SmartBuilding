@@ -2,7 +2,6 @@ package ds.securityControlService;
 
 import ds.SmartBuilding;
 import ds.jmdns.SecurityControlServiceRegistration;
-import ds.service1.ResponseMessage;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.stub.StreamObserver;
