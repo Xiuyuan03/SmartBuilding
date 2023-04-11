@@ -177,12 +177,11 @@ public class SmartBuildingControllerGUI implements ActionListener {
                 }finally {
                     context.cancel(null);
                 }
-
-
-
             }else if(action.equals("lockDoorBidirectionalStream")) {
-                SecurityControlServiceGrpc.SecurityControlServiceStub stub = SecurityControlServiceGrpc.newStub(channel);
+                SecurityControlServiceGrpc.SecurityControlServiceStub stub = MetadataUtils.attachHeaders(SecurityControlServiceGrpc.newStub(channel), metadata);
                 StreamObserver<LockDoorResponse> responseData = new StreamObserver<LockDoorResponse>() {
+                    //retreving reply from service
+                    Context.CancellableContext context = Context.current().withCancellation();
                     @Override
                     public void onNext(LockDoorResponse lockDoorResponse) {
                         reply1.setText(lockDoorResponse.getStatus());
@@ -191,17 +190,17 @@ public class SmartBuildingControllerGUI implements ActionListener {
                     @Override
                     public void onError(Throwable throwable) {
                         System.out.println("Error!!");
+                        context.cancel(null);
                     }
 
                     @Override
-                    public void onCompleted() {
-                        channel.shutdown();
-                    }
+                    public void onCompleted() { channel.shutdown(); }
                 };
-                StreamObserver<LockDoorRequest> requestDate = stub.lockDoorBidirectionalStream(responseData);
+                Deadline deadline = Deadline.after(5, TimeUnit.SECONDS);
+                StreamObserver<LockDoorRequest> requestData = stub.withDeadline(deadline).withDeadline(deadline).lockDoorBidirectionalStream(responseData);
                 for (int i = 0; i < 10; i++) {
                     LockDoorRequest lockDoorRequest = LockDoorRequest.newBuilder().setDoorId(i).build();
-                    requestDate.onNext(lockDoorRequest);
+                    requestData.onNext(lockDoorRequest);
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException ex) {
@@ -209,7 +208,7 @@ public class SmartBuildingControllerGUI implements ActionListener {
                     }
                 }
 
-                requestDate.onCompleted();
+                requestData.onCompleted();
 
                 try {
                     channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
@@ -218,8 +217,10 @@ public class SmartBuildingControllerGUI implements ActionListener {
                 }
 
             }else if(action.equals("activateAlarmClientStream")){
-                SecurityControlServiceGrpc.SecurityControlServiceStub stub = SecurityControlServiceGrpc.newStub(channel);
+                SecurityControlServiceGrpc.SecurityControlServiceStub stub = MetadataUtils.attachHeaders(SecurityControlServiceGrpc.newStub(channel), metadata);
                 StreamObserver<ActivateAlarmResponse> responseData = new StreamObserver<ActivateAlarmResponse>() {
+                    //retreving reply from service
+                    Context.CancellableContext context = Context.current().withCancellation();
                     @Override
                     public void onNext(ActivateAlarmResponse activateAlarmResponse) {
                         reply1.setText(activateAlarmResponse.getStatus());
@@ -228,6 +229,7 @@ public class SmartBuildingControllerGUI implements ActionListener {
                     @Override
                     public void onError(Throwable throwable) {
                         System.out.println("Error!!");
+                        context.cancel(null);
                     }
 
                     @Override
@@ -235,41 +237,44 @@ public class SmartBuildingControllerGUI implements ActionListener {
                         channel.shutdown();
                     }
                 };
-                StreamObserver<ActivateAlarmRequest> requestDate = stub.activateAlarmClientStream(responseData);
+                Deadline deadline = Deadline.after(5, TimeUnit.SECONDS);
+                StreamObserver<ActivateAlarmRequest> requestData = stub.withDeadline(deadline).activateAlarmClientStream(responseData);
                 for (int i = 0; i < 10; i++) {
                     ActivateAlarmRequest activateAlarmRequest = ActivateAlarmRequest.newBuilder().setDoorId(i).build();
-                    requestDate.onNext(activateAlarmRequest);
+                    requestData.onNext(activateAlarmRequest);
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException ex) {
                         ex.printStackTrace();
                     }
                 }
-                requestDate.onCompleted();
+                requestData.onCompleted();
                 try {
                     channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
                 }
             }else if(action.equals("deactivateAlarmClientStream")){
-                SecurityControlServiceGrpc.SecurityControlServiceStub stub = SecurityControlServiceGrpc.newStub(channel);
+                SecurityControlServiceGrpc.SecurityControlServiceStub stub = MetadataUtils.attachHeaders(SecurityControlServiceGrpc.newStub(channel), metadata);
                 StreamObserver<DeactivateAlarmResponse> responseData = new StreamObserver<DeactivateAlarmResponse>() {
+                    //retreving reply from service
+                    Context.CancellableContext context = Context.current().withCancellation();
                     @Override
                     public void onNext(DeactivateAlarmResponse deactivateAlarmResponse) {
                         reply1.setText(deactivateAlarmResponse.getStatus());
                     }
-
                     @Override
                     public void onError(Throwable throwable) {
                         System.out.println("Error!!");
+                        context.cancel(null);
                     }
-
                     @Override
                     public void onCompleted() {
                         channel.shutdown();
                     }
                 };
-                StreamObserver<DeactivateAlarmRequest> requestDate = stub.deactivateAlarmClientStream(responseData);
+                Deadline deadline = Deadline.after(5, TimeUnit.SECONDS);
+                StreamObserver<DeactivateAlarmRequest> requestDate = stub.withDeadline(deadline).deactivateAlarmClientStream(responseData);
                 for (int i = 0; i < 10; i++) {
                     DeactivateAlarmRequest deactivateAlarmRequest = DeactivateAlarmRequest.newBuilder().setDoorId(i).build();
                     requestDate.onNext(deactivateAlarmRequest);
@@ -314,7 +319,7 @@ public class SmartBuildingControllerGUI implements ActionListener {
                                 Status.INTERNAL.withDescription("An error occurred while invoking remote method"));
                     }
                 }finally{
-                context.cancel(null);
+                    context.cancel(null);
                 }
             }else if(action.equals("SwitchLightOff")){
                 LightingControlServiceGrpc.LightingControlServiceBlockingStub blockingStub = MetadataUtils.attachHeaders(LightingControlServiceGrpc.newBlockingStub(channel), metadata);
@@ -362,8 +367,6 @@ public class SmartBuildingControllerGUI implements ActionListener {
                 }finally{
                     context.cancel(null);
                 }
-            }else{
-
             }
         }else if (label.equals("Invoke TemperatureControlService")) {
             System.out.println("Temperature Control Service to be invoked ...");
@@ -441,11 +444,7 @@ public class SmartBuildingControllerGUI implements ActionListener {
                 }finally{
                     context.cancel(null);
                 }
-            }else{
-
             }
-        }else{
-
         }
     }
 }
