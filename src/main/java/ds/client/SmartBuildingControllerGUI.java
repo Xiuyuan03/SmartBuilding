@@ -442,7 +442,7 @@ public class SmartBuildingControllerGUI implements ActionListener {
                     context.cancel(null);
                 }
                 channel.shutdown();
-                System.out.println("");
+
             }
         }
     }
