@@ -6,7 +6,6 @@ import ds.temperatureControlService.*;
 import io.grpc.*;
 import io.grpc.stub.MetadataUtils;
 import io.grpc.stub.StreamObserver;
-
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -442,7 +441,6 @@ public class SmartBuildingControllerGUI implements ActionListener {
                     context.cancel(null);
                 }
                 channel.shutdown();
-
             }
         }
     }
