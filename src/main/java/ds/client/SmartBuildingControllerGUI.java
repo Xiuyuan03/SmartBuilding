@@ -23,6 +23,7 @@ public class SmartBuildingControllerGUI implements ActionListener {
     private String[] temperatureControlServiceArray = new String[] {"SetTemperature", "GetTemperature", "SetTemperatureTime"};
     private String[] securityControlServiceArray = new String[] {"unlockDoor", "lockDoorBidirectionalStream", "activateAlarmClientStream","deactivateAlarmClientStream"};
     private JPanel getSecurityControlServiceJPanel() {
+        int
         JPanel panel = new JPanel();
         BoxLayout boxlayout = new BoxLayout(panel, BoxLayout.X_AXIS);
         JLabel label = new JLabel("Enter value1")	;
