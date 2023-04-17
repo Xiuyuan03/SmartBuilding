@@ -6,11 +6,19 @@ import ds.temperatureControlService.*;
 import io.grpc.*;
 import io.grpc.stub.MetadataUtils;
 import io.grpc.stub.StreamObserver;
+
+import javax.jmdns.JmDNS;
+import javax.jmdns.ServiceEvent;
+import javax.jmdns.ServiceInfo;
+import javax.jmdns.ServiceListener;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
 
 public class SmartBuildingControllerGUI implements ActionListener {
@@ -18,6 +26,9 @@ public class SmartBuildingControllerGUI implements ActionListener {
     private JTextField entry2, reply2;
     private JTextField entry3, reply3;
     private JTextArea textResponse;
+    private ServiceInfo securityControlServiceInfo;
+    private ServiceInfo lightingControlServiceInfo;
+    private ServiceInfo temperatureControlServiceInfo;
     private JComboBox comboOperation1,comboOperation2,comboOperation3;
     private String[] lightingControlServiceArray = new String[] {"SwitchLightOn", "SwitchLightOff", "SetTime"};
     private String[] temperatureControlServiceArray = new String[] {"SetTemperature", "GetTemperature", "SetTemperatureTime"};
@@ -70,7 +81,6 @@ public class SmartBuildingControllerGUI implements ActionListener {
         panel.add(reply2 );
         panel.setLayout(boxlayout);
         return panel;
-        dns
     }
     private JPanel getTemperatureControlServiceJPanel() {
         JPanel panel = new JPanel();
@@ -98,8 +108,58 @@ public class SmartBuildingControllerGUI implements ActionListener {
     public static void main(String[] args) {
 
         SmartBuildingControllerGUI gui = new SmartBuildingControllerGUI();
-
+        gui.discoverService("_http._tcp.local.");
         gui.build();
+    }
+
+    private void discoverService(String service_type) {
+        try {
+            // Create a JmDNS instance
+            JmDNS jmdns = JmDNS.create(InetAddress.getLocalHost());
+            jmdns.addServiceListener(service_type, new ServiceListener() {
+                @Override
+                public void serviceResolved(ServiceEvent event) {
+                    System.out.println("Smart Building Service resolved: " + event.getInfo());
+                    if(event.getName().equals("LightingControlService")){
+                        lightingControlServiceInfo = event.getInfo();
+                    }else if(event.getName().equals("SecurityControlService")){
+                        securityControlServiceInfo = event.getInfo();
+                    }else if(event.getName().equals("TemperatureControlService")){
+                        temperatureControlServiceInfo = event.getInfo();
+                    }
+
+                    ServiceInfo serviceInfo = event.getInfo();
+                    int port = serviceInfo.getPort();
+                    System.out.println("resolving " + service_type + " with properties ...");
+                    System.out.println("\t port: " + port);
+                    System.out.println("\t type:"+ event.getType());
+                    System.out.println("\t name: " + event.getName());
+                    System.out.println("\t description/properties: " + serviceInfo.getNiceTextString());
+                    System.out.println("\t host: " + serviceInfo.getHostAddresses()[0]);
+                }
+
+                @Override
+                public void serviceRemoved(ServiceEvent event) {
+                    System.out.println("Smart Building Service removed: " + event.getInfo());
+                }
+
+                @Override
+                public void serviceAdded(ServiceEvent event) {
+                    System.out.println("Smart Building Service added: " + event.getInfo());
+                }
+            });
+
+            // Wait a bit
+            Thread.sleep(2000);
+
+            jmdns.close();
+        } catch (UnknownHostException e) {
+            System.out.println(e.getMessage());
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     private void build() {
@@ -138,7 +198,9 @@ public class SmartBuildingControllerGUI implements ActionListener {
 
         if (label.equals("Invoke SecurityControlService")) {
             System.out.println("Security Control Service to be invoked ...");
-            ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 60051).usePlaintext().build();
+            String host = securityControlServiceInfo.getHostAddresses()[0];
+            int port = securityControlServiceInfo.getPort();
+            ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
             Metadata metadata = new Metadata();
             Metadata.Key<String> key = Metadata.Key.of("Authorization", Metadata.ASCII_STRING_MARSHALLER);
             metadata.put(key, "Bearer my_token");
@@ -155,6 +217,7 @@ public class SmartBuildingControllerGUI implements ActionListener {
                 try{
                     UnlockDoorResponse response = blockingStub.withDeadline(deadline).unlockDoor(request);
                     reply1.setText(response.getStatus());
+                    System.out.println("result: " + response.getStatus());
                 }catch(StatusRuntimeException exception){
                     if (exception.getStatus().getCode() == Status.DEADLINE_EXCEEDED.getCode()) {
                         // Handle timeout error
@@ -175,6 +238,7 @@ public class SmartBuildingControllerGUI implements ActionListener {
                     @Override
                     public void onNext(LockDoorResponse lockDoorResponse) {
                         reply1.setText(lockDoorResponse.getStatus());
+                        System.out.println("result: " + lockDoorResponse.getStatus());
                     }
 
                     @Override
@@ -214,6 +278,7 @@ public class SmartBuildingControllerGUI implements ActionListener {
                     @Override
                     public void onNext(ActivateAlarmResponse activateAlarmResponse) {
                         reply1.setText(activateAlarmResponse.getStatus());
+                        System.out.println("result: " + activateAlarmResponse.getStatus());
                     }
 
                     @Override
@@ -252,6 +317,7 @@ public class SmartBuildingControllerGUI implements ActionListener {
                     @Override
                     public void onNext(DeactivateAlarmResponse deactivateAlarmResponse) {
                         reply1.setText(deactivateAlarmResponse.getStatus());
+                        System.out.println("result: " + deactivateAlarmResponse.getStatus());
                     }
                     @Override
                     public void onError(Throwable throwable) {
@@ -283,7 +349,9 @@ public class SmartBuildingControllerGUI implements ActionListener {
             }
         }else if (label.equals("Invoke LightingControlService")) {
             System.out.println("Lighting Control Service to be invoked ...");
-            ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 60052).usePlaintext().build();
+            String host = lightingControlServiceInfo.getHostAddresses()[0];
+            int port = lightingControlServiceInfo.getPort();
+            ManagedChannel channel = ManagedChannelBuilder.forAddress(host,port).usePlaintext().build();
             Metadata metadata = new Metadata();
             Metadata.Key<String> key = Metadata.Key.of("Authorization", Metadata.ASCII_STRING_MARSHALLER);
             metadata.put(key, "Bearer my_token");
@@ -300,6 +368,7 @@ public class SmartBuildingControllerGUI implements ActionListener {
                 try{
                     SwitchLightOnResponse response = blockingStub.withDeadline(deadline).switchLightOn(request);
                     reply2.setText(response.getStatus());
+                    System.out.println("result: " + response.getStatus());
                 }catch(StatusRuntimeException exception){
                     if(exception.getStatus().getCode() == Status.DEADLINE_EXCEEDED.getCode()){
                         // Handle timeout error
@@ -324,6 +393,7 @@ public class SmartBuildingControllerGUI implements ActionListener {
                 try{
                     SwitchLightOffResponse response = blockingStub.withDeadline(deadline).switchLightOff(request);
                     reply2.setText( String.valueOf( response.getStatus()) );
+                    System.out.println("result: " + response.getStatus());
                 }catch(StatusRuntimeException exception){
                     if(exception.getStatus().getCode() == Status.DEADLINE_EXCEEDED.getCode()){
                         // Handle timeout error
@@ -348,6 +418,7 @@ public class SmartBuildingControllerGUI implements ActionListener {
                 try{
                     SetTimeResponse response = blockingStub.withDeadline(deadline).setSwitchLightTime(request);
                     reply2.setText( String.valueOf( response.getStatus()) );
+                    System.out.println("result: " + response.getStatus());
                 }catch(StatusRuntimeException exception){
                     if(exception.getStatus().getCode() == Status.DEADLINE_EXCEEDED.getCode()){
                         // Handle timeout error
@@ -364,7 +435,9 @@ public class SmartBuildingControllerGUI implements ActionListener {
             }
         }else if (label.equals("Invoke TemperatureControlService")) {
             System.out.println("Temperature Control Service to be invoked ...");
-            ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 60053).usePlaintext().build();
+            String host = temperatureControlServiceInfo.getHostAddresses()[0];
+            int port = temperatureControlServiceInfo.getPort();
+            ManagedChannel channel = ManagedChannelBuilder.forAddress(host,port).usePlaintext().build();
             Metadata metadata = new Metadata();
             Metadata.Key<String> key = Metadata.Key.of("Authorization", Metadata.ASCII_STRING_MARSHALLER);
             metadata.put(key, "Bearer my_token");
@@ -381,6 +454,7 @@ public class SmartBuildingControllerGUI implements ActionListener {
                 try{
                     SetTemperatureResponse response = blockingStub.withDeadline(deadline).setTemperature(request);
                     reply3.setText( ( response.getStatus()) );
+                    System.out.println("result: " + response.getStatus());
                 }catch(StatusRuntimeException exception){
                     if(exception.getStatus().getCode() == Status.DEADLINE_EXCEEDED.getCode()){
                         // Handle timeout error
@@ -405,6 +479,7 @@ public class SmartBuildingControllerGUI implements ActionListener {
                 try{
                     GetTemperatureResponse response = blockingStub.withDeadline(deadline).getTemperature(request);
                     reply3.setText(String.valueOf( response.getGetValue()));
+                    System.out.println("result: " + response.getGetValue());
                 }catch(StatusRuntimeException exception){
                     if(exception.getStatus().getCode() == Status.DEADLINE_EXCEEDED.getCode()){
                         // Handle timeout error
@@ -429,6 +504,7 @@ public class SmartBuildingControllerGUI implements ActionListener {
                 try{
                     SetTemperatureTimeResponse response = blockingStub.withDeadline(deadline).setTemperatureTime(request);
                     reply3.setText( ( response.getStatus()) );
+                    System.out.println("result: " + response.getStatus());
                 }catch(StatusRuntimeException exception){
                     if(exception.getStatus().getCode() == Status.DEADLINE_EXCEEDED.getCode()){
                         // Handle timeout error

@@ -1,24 +1,29 @@
 package ds.securityControlService;
 
 import ds.SmartBuilding;
-import ds.jmdns.SecurityControlServiceRegistration;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.stub.StreamObserver;
-
+import javax.jmdns.JmDNS;
+import javax.jmdns.ServiceInfo;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.InetAddress;
 import java.util.Map;
+import java.util.Properties;
 
 public class SecurityControlService extends SecurityControlServiceGrpc.SecurityControlServiceImplBase {
     public static void main(String[] args) throws InterruptedException, IOException {
         SecurityControlService securityControlService = new SecurityControlService();
-        int port = 60051;
+        Properties prop = securityControlService.getProperties();
+        //jmdns registration service
+        registerService(prop);
+        int port = Integer.parseInt( prop.getProperty("service_port") );
         Server server = ServerBuilder.forPort(port)
                 .addService(securityControlService)
                 .build()
                 .start();
-        //jmdns registration service
-        SecurityControlServiceRegistration.register();
         System.out.println("Security Control Service started, listening on " + port);
         server.awaitTermination();
     }
@@ -28,7 +33,7 @@ public class SecurityControlService extends SecurityControlServiceGrpc.SecurityC
         int doorId = request.getDoorId();
         SmartBuilding smartBuilding = SmartBuilding.getInstance();
         smartBuilding.getDoorIdToLockStatusMap().put(doorId,"Unlocked");
-        UnlockDoorResponse reply = UnlockDoorResponse.newBuilder().setStatus("Success").build();
+        UnlockDoorResponse reply = UnlockDoorResponse.newBuilder().setStatus("Unlock door " +doorId+" Success").build();
         System.out.println("The door "+doorId+" is unlock!");
         responseObserver.onNext( reply );
         responseObserver.onCompleted();
@@ -39,7 +44,7 @@ public class SecurityControlService extends SecurityControlServiceGrpc.SecurityC
         int doorId = request.getDoorId();
         SmartBuilding smartBuilding = SmartBuilding.getInstance();
         smartBuilding.getDoorIdToLockStatusMap().put(doorId,"Locked");
-        LockDoorResponse reply = LockDoorResponse.newBuilder().setStatus("Success").build();
+        LockDoorResponse reply = LockDoorResponse.newBuilder().setStatus("Lock door " +doorId+" Success").build();
         System.out.println("The door "+doorId+" is lock!");
         responseObserver.onNext( reply );
         responseObserver.onCompleted();
@@ -50,7 +55,7 @@ public class SecurityControlService extends SecurityControlServiceGrpc.SecurityC
         int doorId = request.getDoorId();
         SmartBuilding smartBuilding = SmartBuilding.getInstance();
         smartBuilding.getDoorIdToAlarmMap().put(doorId,"Activate alarm");
-        ActivateAlarmResponse reply = ActivateAlarmResponse.newBuilder().setStatus("Activate Alarm").build();
+        ActivateAlarmResponse reply = ActivateAlarmResponse.newBuilder().setStatus("Activate Alarm "+doorId).build();
         System.out.println("The door "+doorId+" is activate alarm!");
         responseObserver.onNext( reply );
         responseObserver.onCompleted();
@@ -61,7 +66,7 @@ public class SecurityControlService extends SecurityControlServiceGrpc.SecurityC
         int doorId = request.getDoorId();
         SmartBuilding smartBuilding = SmartBuilding.getInstance();
         smartBuilding.getDoorIdToAlarmMap().put(doorId,"Deactivate alarm");
-        DeactivateAlarmResponse reply = DeactivateAlarmResponse.newBuilder().setStatus("Deactivate Alarm").build();
+        DeactivateAlarmResponse reply = DeactivateAlarmResponse.newBuilder().setStatus("Deactivate Alarm "+doorId).build();
         System.out.println("The door "+doorId+" is deactivate alarm!");
         responseObserver.onNext( reply );
         responseObserver.onCompleted();
@@ -156,5 +161,46 @@ public class SecurityControlService extends SecurityControlServiceGrpc.SecurityC
                 responseObserver.onCompleted();
             }
         };
+    }
+    public static void registerService(Properties prop){
+        try {
+            // Create a JmDNS instance
+            JmDNS jmdns = JmDNS.create(InetAddress.getLocalHost());
+            String service_type = prop.getProperty("service_type");
+            String service_name = prop.getProperty("service_name");
+            int service_port = Integer.parseInt( prop.getProperty("service_port") );
+            String service_description_properties = prop.getProperty("service_description");
+
+            // Register a service
+            ServiceInfo serviceInfo = ServiceInfo.create(service_type, service_name, service_port, service_description_properties);
+            //ServiceInfo serviceInfo = ServiceInfo.create("_http._tcp.local.", "LightingControlService", 60052, "service for basic LightingControlService operations");
+            jmdns.registerService(serviceInfo);
+
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+    private Properties getProperties(){
+        Properties prop = null;
+
+        try (InputStream input = new FileInputStream("src/main/resources/securityControlService.properties")) {
+
+            prop = new Properties();
+
+            // load a properties file
+            prop.load(input);
+
+            // get the property value and print it out
+            System.out.println("security Control Service properies ...");
+            System.out.println("\t service_type: " + prop.getProperty("service_type"));
+            System.out.println("\t service_name: " +prop.getProperty("service_name"));
+            System.out.println("\t service_description: " +prop.getProperty("service_description"));
+            System.out.println("\t service_port: " +prop.getProperty("service_port"));
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
+        return prop;
     }
 }
