@@ -54,9 +54,16 @@ public class SmartBuildingControllerGUI implements ActionListener {
         button.addActionListener(this);
         panel.add(button);
         panel.add(Box.createRigidArea(new Dimension(10, 0)));
+        /*
         reply1 = new JTextField("", 10);
         reply1 .setEditable(false);
         panel.add(reply1 );
+         */
+        textResponse = new JTextArea(3, 20);
+        textResponse .setLineWrap(true);
+        textResponse.setWrapStyleWord(true);
+        JScrollPane scrollPane = new JScrollPane(textResponse);
+        panel.add(scrollPane);
         panel.setLayout(boxlayout);
         return panel;
     }
@@ -216,7 +223,8 @@ public class SmartBuildingControllerGUI implements ActionListener {
                 Context.CancellableContext context = Context.current().withCancellation();
                 try{
                     UnlockDoorResponse response = blockingStub.withDeadline(deadline).unlockDoor(request);
-                    reply1.setText(response.getStatus());
+                    //textResponse.setText(response.getStatus());
+                    textResponse.append("reply:"+ response.getStatus()+"\n");
                     System.out.println("result: " + response.getStatus());
                 }catch(StatusRuntimeException exception){
                     if (exception.getStatus().getCode() == Status.DEADLINE_EXCEEDED.getCode()) {
@@ -237,7 +245,8 @@ public class SmartBuildingControllerGUI implements ActionListener {
                     Context.CancellableContext context = Context.current().withCancellation();
                     @Override
                     public void onNext(LockDoorResponse lockDoorResponse) {
-                        reply1.setText(lockDoorResponse.getStatus());
+                        textResponse.append("reply:"+ lockDoorResponse.getStatus()+"\n");
+                        //reply1.setText(lockDoorResponse.getStatus());
                         System.out.println("result: " + lockDoorResponse.getStatus());
                     }
 
@@ -277,7 +286,8 @@ public class SmartBuildingControllerGUI implements ActionListener {
                     Context.CancellableContext context = Context.current().withCancellation();
                     @Override
                     public void onNext(ActivateAlarmResponse activateAlarmResponse) {
-                        reply1.setText(activateAlarmResponse.getStatus());
+                        textResponse.append("reply:"+ activateAlarmResponse.getStatus()+"\n");
+                        //reply1.setText(activateAlarmResponse.getStatus());
                         System.out.println("result: " + activateAlarmResponse.getStatus());
                     }
 
@@ -292,9 +302,9 @@ public class SmartBuildingControllerGUI implements ActionListener {
                         channel.shutdown();
                     }
                 };
-                Deadline deadline = Deadline.after(5, TimeUnit.SECONDS);
+                Deadline deadline = Deadline.after(10, TimeUnit.SECONDS);
                 StreamObserver<ActivateAlarmRequest> requestData = stub.withDeadline(deadline).activateAlarmClientStream(responseData);
-                for (int i = 0; i < 10; i++) {
+                for (int i = 1; i < 3; i++) {
                     ActivateAlarmRequest activateAlarmRequest = ActivateAlarmRequest.newBuilder().setDoorId(i).build();
                     requestData.onNext(activateAlarmRequest);
                     try {
@@ -316,7 +326,8 @@ public class SmartBuildingControllerGUI implements ActionListener {
                     Context.CancellableContext context = Context.current().withCancellation();
                     @Override
                     public void onNext(DeactivateAlarmResponse deactivateAlarmResponse) {
-                        reply1.setText(deactivateAlarmResponse.getStatus());
+                        textResponse.append("reply:"+ deactivateAlarmResponse.getStatus()+"\n");
+                        //reply1.setText(deactivateAlarmResponse.getStatus());
                         System.out.println("result: " + deactivateAlarmResponse.getStatus());
                     }
                     @Override
@@ -329,9 +340,9 @@ public class SmartBuildingControllerGUI implements ActionListener {
                         channel.shutdown();
                     }
                 };
-                Deadline deadline = Deadline.after(5, TimeUnit.SECONDS);
+                Deadline deadline = Deadline.after(10, TimeUnit.SECONDS);
                 StreamObserver<DeactivateAlarmRequest> requestDate = stub.withDeadline(deadline).deactivateAlarmClientStream(responseData);
-                for (int i = 0; i < 10; i++) {
+                for (int i = 1; i < 3; i++) {
                     DeactivateAlarmRequest deactivateAlarmRequest = DeactivateAlarmRequest.newBuilder().setDoorId(i).build();
                     requestDate.onNext(deactivateAlarmRequest);
                     try {

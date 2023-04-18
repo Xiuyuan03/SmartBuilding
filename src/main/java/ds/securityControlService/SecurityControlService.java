@@ -10,6 +10,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
 
@@ -99,7 +100,7 @@ public class SecurityControlService extends SecurityControlServiceGrpc.SecurityC
 
             @Override
             public void onError(Throwable throwable) {
-                System.out.println("Error!!");
+                System.out.println("Error!!"+ Arrays.toString(throwable.getStackTrace()));
             }
 
             @Override
