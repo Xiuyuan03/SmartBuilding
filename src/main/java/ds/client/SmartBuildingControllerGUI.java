@@ -32,7 +32,7 @@ public class SmartBuildingControllerGUI implements ActionListener {
     private JComboBox comboOperation1,comboOperation2,comboOperation3;
     private String[] lightingControlServiceArray = new String[] {"SwitchLightOn", "SwitchLightOff", "SetTime"};
     private String[] temperatureControlServiceArray = new String[] {"SetTemperature", "GetTemperature", "SetTemperatureTime"};
-    private String[] securityControlServiceArray = new String[] {"unlockDoor", "lockDoorBidirectionalStream", "activateAlarmClientStream","deactivateAlarmClientStream"};
+    private String[] securityControlServiceArray = new String[] {"unlockDoor", "lockDoorBidirectionalStream", "activateAlarmClientStream","deactivateAlarmServerStream"};
     private JPanel getSecurityControlServiceJPanel() {
         JPanel panel = new JPanel();
         BoxLayout boxlayout = new BoxLayout(panel, BoxLayout.X_AXIS);
@@ -213,6 +213,7 @@ public class SmartBuildingControllerGUI implements ActionListener {
             metadata.put(key, "Bearer my_token");
             int index = comboOperation1.getSelectedIndex();
             String action = securityControlServiceArray[index];
+            textResponse.setText("");
             if(action.equals("unlockDoor")){
                 SecurityControlServiceGrpc.SecurityControlServiceBlockingStub blockingStub = MetadataUtils.attachHeaders(SecurityControlServiceGrpc.newBlockingStub(channel), metadata);
                 // Set a deadline of 5 second for the remote invocation
@@ -276,7 +277,7 @@ public class SmartBuildingControllerGUI implements ActionListener {
                 requestData.onCompleted();
 
                 try {
-                    channel.shutdown().awaitTermination(50, TimeUnit.SECONDS);
+                    channel.shutdown().awaitTermination(1, TimeUnit.SECONDS);
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
                 }
@@ -319,11 +320,11 @@ public class SmartBuildingControllerGUI implements ActionListener {
                 }
                 requestData.onCompleted();
                 try {
-                    channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
+                    channel.shutdown().awaitTermination(1, TimeUnit.SECONDS);
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
                 }
-            }else if(action.equals("deactivateAlarmClientStream")){
+            }else if(action.equals("deactivateAlarmServerStream")){
                 SecurityControlServiceGrpc.SecurityControlServiceStub stub = MetadataUtils.attachHeaders(SecurityControlServiceGrpc.newStub(channel), metadata);
                 StreamObserver<DeactivateAlarmResponse> responseData = new StreamObserver<DeactivateAlarmResponse>() {
                     //retreving reply from service
@@ -345,22 +346,8 @@ public class SmartBuildingControllerGUI implements ActionListener {
                     }
                 };
                 Deadline deadline = Deadline.after(10, TimeUnit.SECONDS);
-                StreamObserver<DeactivateAlarmRequest> requestDate = stub.withDeadline(deadline).deactivateAlarmClientStream(responseData);
-                for (int i = 1; i < 3; i++) {
-                    DeactivateAlarmRequest deactivateAlarmRequest = DeactivateAlarmRequest.newBuilder().setDoorId(i).build();
-                    requestDate.onNext(deactivateAlarmRequest);
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException ex) {
-                        ex.printStackTrace();
-                    }
-                }
-                requestDate.onCompleted();
-                try {
-                    channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
-                } catch (InterruptedException ex) {
-                    ex.printStackTrace();
-                }
+                DeactivateAlarmRequest deactivateAlarmRequest = DeactivateAlarmRequest.newBuilder().setDoorId(Integer.parseInt(entry1.getText())).build();
+                stub.withDeadline(deadline).deactivateAlarmServerStream(deactivateAlarmRequest,responseData);
             }
         }else if (label.equals("Invoke LightingControlService")) {
             System.out.println("Lighting Control Service to be invoked ...");

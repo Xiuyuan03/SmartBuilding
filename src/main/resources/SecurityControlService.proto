@@ -10,15 +10,10 @@ package securityControlService;
 service SecurityControlService {
   //simple RPC
   rpc unlockDoor(UnlockDoorRequest) returns (UnlockDoorResponse) {}
-  rpc lockDoor(LockDoorRequest) returns (LockDoorResponse) {}
-  rpc activateAlarm(ActivateAlarmRequest) returns (ActivateAlarmResponse) {}
-  rpc deactivateAlarm(DeactivateAlarmRequest) returns (DeactivateAlarmResponse) {}
-
-  rpc getLockStatusServerStream(LockDoorStatusRequest) returns (stream LockDoorStatusResponse) {}
   //client-side streaming RPC
   rpc activateAlarmClientStream(stream ActivateAlarmRequest) returns (ActivateAlarmResponse) {}
   //server- side streaming RPC
-  rpc deactivateAlarmClientStream(stream DeactivateAlarmRequest) returns (DeactivateAlarmResponse) {}
+  rpc deactivateAlarmServerStream(DeactivateAlarmRequest) returns (stream DeactivateAlarmResponse) {}
   //bidirectional streamingRPC
   rpc lockDoorBidirectionalStream(stream LockDoorRequest) returns (stream LockDoorResponse) {}
 }

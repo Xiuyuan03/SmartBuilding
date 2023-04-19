@@ -39,52 +39,6 @@ public class SecurityControlService extends SecurityControlServiceGrpc.SecurityC
     }
 
     @Override
-    public void lockDoor(LockDoorRequest request, StreamObserver<LockDoorResponse> responseObserver) {
-        int doorId = request.getDoorId();
-        SmartBuilding smartBuilding = SmartBuilding.getInstance();
-        smartBuilding.getDoorIdToLockStatusMap().put(doorId,"Locked");
-        LockDoorResponse reply = LockDoorResponse.newBuilder().setStatus("Lock door " +doorId+" Success").build();
-        System.out.println("The door "+doorId+" is lock!");
-        responseObserver.onNext( reply );
-        responseObserver.onCompleted();
-    }
-
-    @Override
-    public void activateAlarm(ActivateAlarmRequest request, StreamObserver<ActivateAlarmResponse> responseObserver) {
-        int doorId = request.getDoorId();
-        SmartBuilding smartBuilding = SmartBuilding.getInstance();
-        smartBuilding.getDoorIdToAlarmMap().put(doorId,"Activate alarm");
-        ActivateAlarmResponse reply = ActivateAlarmResponse.newBuilder().setStatus("Activate Alarm "+doorId).build();
-        System.out.println("The door "+doorId+" is activate alarm!");
-        responseObserver.onNext( reply );
-        responseObserver.onCompleted();
-    }
-
-    @Override
-    public void deactivateAlarm(DeactivateAlarmRequest request, StreamObserver<DeactivateAlarmResponse> responseObserver) {
-        int doorId = request.getDoorId();
-        SmartBuilding smartBuilding = SmartBuilding.getInstance();
-        smartBuilding.getDoorIdToAlarmMap().put(doorId,"Deactivate alarm");
-        DeactivateAlarmResponse reply = DeactivateAlarmResponse.newBuilder().setStatus("Deactivate Alarm "+doorId).build();
-        System.out.println("The door "+doorId+" is deactivate alarm!");
-        responseObserver.onNext( reply );
-        responseObserver.onCompleted();
-    }
-
-    @Override
-    public void getLockStatusServerStream(LockDoorStatusRequest request, StreamObserver<LockDoorStatusResponse> responseObserver) {
-        String requestDoorId = request.getDoorIdRequest();
-        SmartBuilding smartBuilding = SmartBuilding.getInstance();
-        Map<Integer,String> doorIdToLockDoorStatusMap = smartBuilding.getDoorIdToLockStatusMap();
-        String[] doorIdArea =  requestDoorId.split("~");
-        for (int i = Integer.parseInt(doorIdArea[0]); i < Integer.parseInt(doorIdArea[1]); i++) {
-            responseObserver.onNext( LockDoorStatusResponse.newBuilder().setStatus(doorIdToLockDoorStatusMap.get(i)).build() );
-        }
-        System.out.println("Get lock door status success!");
-        responseObserver.onCompleted();
-    }
-
-    @Override
     public StreamObserver<ActivateAlarmRequest> activateAlarmClientStream(StreamObserver<ActivateAlarmResponse> responseObserver) {
         return new StreamObserver<ActivateAlarmRequest>(){
 
@@ -111,29 +65,15 @@ public class SecurityControlService extends SecurityControlServiceGrpc.SecurityC
     }
 
     @Override
-    public StreamObserver<DeactivateAlarmRequest> deactivateAlarmClientStream(StreamObserver<DeactivateAlarmResponse> responseObserver) {
-        return new StreamObserver<DeactivateAlarmRequest>(){
-
-            @Override
-            public void onNext(DeactivateAlarmRequest deactivateAlarmRequest) {
-                int doorId = deactivateAlarmRequest.getDoorId();
-                SmartBuilding smartBuilding = SmartBuilding.getInstance();
-                smartBuilding.getDoorIdToAlarmMap().put(doorId,"Deactivate alarm");
-                System.out.println("The door "+doorId+" is deactivate alarm!");
-            }
-
-            @Override
-            public void onError(Throwable throwable) {
-                System.out.println("Error!!");
-            }
-
-            @Override
-            public void onCompleted() {
-                System.out.println("Deactivate alarm Success!");
-                responseObserver.onNext(DeactivateAlarmResponse.newBuilder().setStatus("Deactivate Alarm Success!").build());
-                responseObserver.onCompleted();
-            }
-        };
+    public void deactivateAlarmServerStream(DeactivateAlarmRequest request, StreamObserver<DeactivateAlarmResponse> responseObserver) {
+        int requestDoorId = request.getDoorId();
+        SmartBuilding smartBuilding = SmartBuilding.getInstance();
+        smartBuilding.getDoorIdToAlarmMap().put(requestDoorId,"deactivate alarm");
+        System.out.println("The door "+requestDoorId+" is deactivate alarm!");
+        for (int i = 0; i < 2; i++) {
+            responseObserver.onNext(DeactivateAlarmResponse.newBuilder().setStatus(i+":Deactivate Alarm for door"+requestDoorId+" Success").build());
+        }
+        responseObserver.onCompleted();
     }
 
     @Override
