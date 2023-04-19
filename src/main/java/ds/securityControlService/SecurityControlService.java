@@ -10,9 +10,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 public class SecurityControlService extends SecurityControlServiceGrpc.SecurityControlServiceImplBase {
     public static void main(String[] args) throws InterruptedException, IOException {
@@ -106,7 +104,7 @@ public class SecurityControlService extends SecurityControlServiceGrpc.SecurityC
             @Override
             public void onCompleted() {
                 System.out.println("Activate alarm success!");
-                responseObserver.onNext(ActivateAlarmResponse.newBuilder().setStatus("Success!").build());
+                responseObserver.onNext(ActivateAlarmResponse.newBuilder().setStatus("Activate Alarm Success!").build());
                 responseObserver.onCompleted();
             }
         };
@@ -131,8 +129,8 @@ public class SecurityControlService extends SecurityControlServiceGrpc.SecurityC
 
             @Override
             public void onCompleted() {
-                System.out.println("Deactivate alarm success!");
-                responseObserver.onNext(DeactivateAlarmResponse.newBuilder().setStatus("Success!").build());
+                System.out.println("Deactivate alarm Success!");
+                responseObserver.onNext(DeactivateAlarmResponse.newBuilder().setStatus("Deactivate Alarm Success!").build());
                 responseObserver.onCompleted();
             }
         };
@@ -141,12 +139,13 @@ public class SecurityControlService extends SecurityControlServiceGrpc.SecurityC
     @Override
     public StreamObserver<LockDoorRequest> lockDoorBidirectionalStream(StreamObserver<LockDoorResponse> responseObserver) {
         return new StreamObserver<LockDoorRequest>(){
-
+            List<Integer> doorIds = new ArrayList<>();
             @Override
             public void onNext(LockDoorRequest lockDoorRequest) {
                 int doorId = lockDoorRequest.getDoorId();
                 SmartBuilding smartBuilding = SmartBuilding.getInstance();
                 smartBuilding.getDoorIdToLockStatusMap().put(doorId,"Locked");
+                doorIds.add(doorId);
                 System.out.println("The door "+doorId+" is lock!");
             }
 
@@ -158,7 +157,9 @@ public class SecurityControlService extends SecurityControlServiceGrpc.SecurityC
             @Override
             public void onCompleted() {
                 System.out.println("Lock door success!");
-                responseObserver.onNext(LockDoorResponse.newBuilder().setStatus("Success!").build());
+                for (int i = 0; i < doorIds.size(); i++) {
+                    responseObserver.onNext(LockDoorResponse.newBuilder().setStatus("Lock door "+doorIds.get(i)+" Success!").build());
+                }
                 responseObserver.onCompleted();
             }
         };

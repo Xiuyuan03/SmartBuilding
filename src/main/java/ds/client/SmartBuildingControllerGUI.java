@@ -36,13 +36,13 @@ public class SmartBuildingControllerGUI implements ActionListener {
     private JPanel getSecurityControlServiceJPanel() {
         JPanel panel = new JPanel();
         BoxLayout boxlayout = new BoxLayout(panel, BoxLayout.X_AXIS);
-        JLabel label = new JLabel("Enter value1")	;
+        JLabel label = new JLabel("Enter Door Id1")	;
         panel.add(label);
         panel.add(Box.createRigidArea(new Dimension(10, 0)));
         entry1 = new JTextField("",10);
         panel.add(entry1);
         panel.add(Box.createRigidArea(new Dimension(10, 0)));
-        JLabel label1 = new JLabel("Enter value2")	;
+        JLabel label1 = new JLabel("Enter Door Id2")	;
         panel.add(label1);
         panel.add(Box.createRigidArea(new Dimension(10, 0)));
         entry1_1 = new JTextField("",10);
@@ -259,13 +259,15 @@ public class SmartBuildingControllerGUI implements ActionListener {
                     @Override
                     public void onCompleted() { channel.shutdown(); }
                 };
-                Deadline deadline = Deadline.after(5, TimeUnit.SECONDS);
+                int doorId1 = Integer.parseInt(entry1.getText());
+                int doorId2 = Integer.parseInt(entry1_1.getText());
+                Deadline deadline = Deadline.after(20, TimeUnit.SECONDS);
                 StreamObserver<LockDoorRequest> requestData = stub.withDeadline(deadline).withDeadline(deadline).lockDoorBidirectionalStream(responseData);
-                for (int i = 0; i < 10; i++) {
+                for (int i = doorId1; i <= doorId2; i++) {
                     LockDoorRequest lockDoorRequest = LockDoorRequest.newBuilder().setDoorId(i).build();
                     requestData.onNext(lockDoorRequest);
                     try {
-                        Thread.sleep(1000);
+                        Thread.sleep(100);
                     } catch (InterruptedException ex) {
                         ex.printStackTrace();
                     }
@@ -274,7 +276,7 @@ public class SmartBuildingControllerGUI implements ActionListener {
                 requestData.onCompleted();
 
                 try {
-                    channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
+                    channel.shutdown().awaitTermination(50, TimeUnit.SECONDS);
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
                 }
@@ -302,13 +304,15 @@ public class SmartBuildingControllerGUI implements ActionListener {
                         channel.shutdown();
                     }
                 };
+                int doorId1 = Integer.parseInt(entry1.getText());
+                int doorId2 = Integer.parseInt(entry1_1.getText());
                 Deadline deadline = Deadline.after(10, TimeUnit.SECONDS);
                 StreamObserver<ActivateAlarmRequest> requestData = stub.withDeadline(deadline).activateAlarmClientStream(responseData);
-                for (int i = 1; i < 3; i++) {
+                for (int i = doorId1; i <= doorId2; i++) {
                     ActivateAlarmRequest activateAlarmRequest = ActivateAlarmRequest.newBuilder().setDoorId(i).build();
                     requestData.onNext(activateAlarmRequest);
                     try {
-                        Thread.sleep(1000);
+                        Thread.sleep(100);
                     } catch (InterruptedException ex) {
                         ex.printStackTrace();
                     }
