@@ -205,8 +205,10 @@ public class SmartBuildingControllerGUI implements ActionListener {
 
         if (label.equals("Invoke SecurityControlService")) {
             System.out.println("Security Control Service to be invoked ...");
-            String host = securityControlServiceInfo.getHostAddresses()[0];
-            int port = securityControlServiceInfo.getPort();
+            //String host = securityControlServiceInfo.getHostAddresses()[0];
+            //int port = securityControlServiceInfo.getPort();
+            String host = "127.0.0.1";
+            int port = 60061;
             ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
             Metadata metadata = new Metadata();
             Metadata.Key<String> key = Metadata.Key.of("Authorization", Metadata.ASCII_STRING_MARSHALLER);
@@ -214,8 +216,6 @@ public class SmartBuildingControllerGUI implements ActionListener {
             int index = comboOperation1.getSelectedIndex();
             String action = securityControlServiceArray[index];
             textResponse.setText("");
-
-            int in
             if(action.equals("unlockDoor")){
                 SecurityControlServiceGrpc.SecurityControlServiceBlockingStub blockingStub = MetadataUtils.attachHeaders(SecurityControlServiceGrpc.newBlockingStub(channel), metadata);
                 // Set a deadline of 5 second for the remote invocation
@@ -353,8 +353,12 @@ public class SmartBuildingControllerGUI implements ActionListener {
             }
         }else if (label.equals("Invoke LightingControlService")) {
             System.out.println("Lighting Control Service to be invoked ...");
+            /*
             String host = lightingControlServiceInfo.getHostAddresses()[0];
             int port = lightingControlServiceInfo.getPort();
+             */
+            String host = "127.0.0.1";
+            int port = 60062;
             ManagedChannel channel = ManagedChannelBuilder.forAddress(host,port).usePlaintext().build();
             Metadata metadata = new Metadata();
             Metadata.Key<String> key = Metadata.Key.of("Authorization", Metadata.ASCII_STRING_MARSHALLER);
@@ -439,8 +443,12 @@ public class SmartBuildingControllerGUI implements ActionListener {
             }
         }else if (label.equals("Invoke TemperatureControlService")) {
             System.out.println("Temperature Control Service to be invoked ...");
+            /*
             String host = temperatureControlServiceInfo.getHostAddresses()[0];
             int port = temperatureControlServiceInfo.getPort();
+            */
+            String host = "127.0.0.1";
+            int port = 60063;
             ManagedChannel channel = ManagedChannelBuilder.forAddress(host,port).usePlaintext().build();
             Metadata metadata = new Metadata();
             Metadata.Key<String> key = Metadata.Key.of("Authorization", Metadata.ASCII_STRING_MARSHALLER);

@@ -4,7 +4,6 @@ import ds.SmartBuilding;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.stub.StreamObserver;
-
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceInfo;
 import java.io.FileInputStream;
