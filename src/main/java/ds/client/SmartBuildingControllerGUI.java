@@ -214,6 +214,8 @@ public class SmartBuildingControllerGUI implements ActionListener {
             int index = comboOperation1.getSelectedIndex();
             String action = securityControlServiceArray[index];
             textResponse.setText("");
+
+            int
             if(action.equals("unlockDoor")){
                 SecurityControlServiceGrpc.SecurityControlServiceBlockingStub blockingStub = MetadataUtils.attachHeaders(SecurityControlServiceGrpc.newBlockingStub(channel), metadata);
                 // Set a deadline of 5 second for the remote invocation
