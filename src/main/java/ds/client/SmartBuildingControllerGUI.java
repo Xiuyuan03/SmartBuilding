@@ -503,6 +503,7 @@ public class SmartBuildingControllerGUI implements ActionListener {
                     }
                 }finally{
                     context.cancel(null);
+                    context.cancel(null);
                 }
                 channel.shutdown();
             }else if(action.equals("SetTemperatureTime")){
