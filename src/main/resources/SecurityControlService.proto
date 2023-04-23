@@ -14,7 +14,7 @@ service SecurityControlService {
   rpc activateAlarmClientStream(stream ActivateAlarmRequest) returns (ActivateAlarmResponse) {}
   //server- side streaming RPC
   rpc deactivateAlarmServerStream(DeactivateAlarmRequest) returns (stream DeactivateAlarmResponse) {}
-  //bidirectional streamingRPC
+  //bidirectional streaming RPC
   rpc lockDoorBidirectionalStream(stream LockDoorRequest) returns (stream LockDoorResponse) {}
 }
 message LockDoorStatusRequest {

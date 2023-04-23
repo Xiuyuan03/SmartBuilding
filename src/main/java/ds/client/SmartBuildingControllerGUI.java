@@ -458,7 +458,7 @@ public class SmartBuildingControllerGUI implements ActionListener {
             if(action.equals("SetTemperature")){
                 TemperatureControlServiceGrpc.TemperatureControlServiceBlockingStub blockingStub = MetadataUtils.attachHeaders(TemperatureControlServiceGrpc.newBlockingStub(channel), metadata);
                 // Set a deadline of 5 second for the remote invocation
-                Deadline deadline = Deadline.after(5, TimeUnit.SECONDS);
+                Deadline deadline = Deadline.after(10, TimeUnit.SECONDS);
                 //preparing message to send
                 SetTemperatureRequest request = SetTemperatureRequest.newBuilder().setValue(Float.parseFloat(entry3.getText())).build();
                 //retreving reply from service
@@ -483,7 +483,7 @@ public class SmartBuildingControllerGUI implements ActionListener {
             }else if(action.equals("GetTemperature")){
                 TemperatureControlServiceGrpc.TemperatureControlServiceBlockingStub blockingStub = MetadataUtils.attachHeaders(TemperatureControlServiceGrpc.newBlockingStub(channel), metadata);
                 // Set a deadline of 5 second for the remote invocation
-                Deadline deadline = Deadline.after(5, TimeUnit.SECONDS);
+                Deadline deadline = Deadline.after(10, TimeUnit.SECONDS);
                 //preparing message to send
                 GetTemperatureRequest request = GetTemperatureRequest.newBuilder().setRequestValue(String.valueOf(entry3.getText())).build();
                 //retreving reply from service
@@ -508,7 +508,7 @@ public class SmartBuildingControllerGUI implements ActionListener {
             }else if(action.equals("SetTemperatureTime")){
                 TemperatureControlServiceGrpc.TemperatureControlServiceBlockingStub blockingStub = MetadataUtils.attachHeaders(TemperatureControlServiceGrpc.newBlockingStub(channel), metadata);
                 // Set a deadline of 5 second for the remote invocation
-                Deadline deadline = Deadline.after(5, TimeUnit.SECONDS);
+                Deadline deadline = Deadline.after(10, TimeUnit.SECONDS);
                 //preparing message to send
                 SetTemperatureTimeRequest request = SetTemperatureTimeRequest.newBuilder().setTime(Float.parseFloat(entry3.getText())).build();
                 //retreving reply from service
