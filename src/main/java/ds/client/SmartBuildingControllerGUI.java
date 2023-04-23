@@ -440,6 +440,7 @@ public class SmartBuildingControllerGUI implements ActionListener {
                     context.cancel(null);
                 }
                 channel.shutdown();
+
             }
         }else if (label.equals("Invoke TemperatureControlService")) {
             System.out.println("Temperature Control Service to be invoked ...");
